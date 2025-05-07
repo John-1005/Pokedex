@@ -4,7 +4,7 @@ import "testing"
 
 
 
-func TestCleanInput(t *Testing.T) {
+func TestCleanInput(t *testing.T) {
   cases := []struct {
 	input    string
 	expected []string
@@ -13,21 +13,37 @@ func TestCleanInput(t *Testing.T) {
 		input:    "  hello  world  ",
 		expected: []string{"hello", "world"},
 	},
-	// add more cases here
+  {
+    input:    "   game    over  ",
+    expected: []string{"game", "over"},
+  },
+  {
+    input:    "   please   try    again",
+    expected: []string{"please", "try", "again"},
+  },
+  {
+    input:    "   you   shall   not   pass",
+    expected: []string{"you", "shall", "not", "pass"},
+  },
+  {
+    input:    "",
+    expected: []string{},
+  },
 }
 
   for _, c := range cases {
 	actual := cleanInput(c.input)
-	// Check the length of the actual slice against the expected slice
-	// if they don't match, use t.Errorf to print an error message
-	// and fail the test
-	for i := range actual {
-		word := actual[i]
-		expectedWord := c.expected[i]
-		// Check each word in the slice
-		// if they don't match, use t.Errorf to print an error message
-		// and fail the test
-	}
-}
+  if len(actual) != len(c.expected){
+    t.Errorf("Expected Length %d, got %d", len(c.expected), len(actual))
+    continue
+  }
+	  for i := range actual {
+		  word := actual[i]
+		  expectedWord := c.expected[i]
+      if word != expectedWord {
+        t.Errorf("At index %d: expected word %s, got %s", i, expectedWord, word)
+     }
+	  }
+  }
 
 }
