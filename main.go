@@ -6,7 +6,9 @@ import (
         "strings"
 				"bufio"
 				"os"
+				"time"
     		"github.com/John-1005/Pokedex/internal/pokeapi"
+				"github.com/John-1005/Pokedex/internal/pokecache"
 )
 
 type cliCommand struct{
@@ -20,6 +22,7 @@ type Config struct {
 	PreviousURL string
 }
 
+var pokeCache = pokecache.NewCache(5 * time.Minute)
 var commandRegistry map[string]cliCommand 
 
  func init() {
@@ -51,6 +54,7 @@ var commandRegistry map[string]cliCommand
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	config := &Config{}
+	client =: pokeapi.NewClient(pokeCache)
 	for {
 		fmt.Println("Pokedex >")
 		scanner.Scan()
