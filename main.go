@@ -18,6 +18,7 @@ type cliCommand struct{
 type Config struct {
 	NextURL string
 	PreviousURL string
+	Args []string
 }
 
 var commandRegistry map[string]cliCommand 
@@ -44,6 +45,11 @@ var commandRegistry map[string]cliCommand
 				description: "Go back to the previou smap location",
 				callback:		  commandMapb,
 			},
+			"explore": {
+				name: 			 "explore",
+				description: "Shows list of pokemon in the location",
+				callback:    commandExplore,
+			},
 	 }
  }
 
@@ -66,6 +72,7 @@ func main() {
 			fmt.Println("Unknown command")
 			continue
 		}
+		config.Args = words[1:]
 		err := cmd.callback(config)
 		if err != nil {
 			fmt.Println(err)
@@ -163,6 +170,33 @@ func commandMapb (config *Config) error {
 		config.PreviousURL = *rsp.Previous
 	}else{
 		config.PreviousURL = ""
+	}
+	return nil
+}
+
+func commandExplore (config *Config) error {
+
+	if len(config.Args) == 0 {
+		fmt.Println("Please specify a location area to explore")
+		return nil
+	}
+
+	client := pokeapi.NewClient()
+
+	location, err := client.GetLocationArea(config.Args[0])
+	if err != nil {
+		fmt.Println("invaild location")
+		return err
+	}
+	fmt.Printf("Exploring %s... \n", config.Args[0])
+	if len(location.PokemonEncounters) == 0 {
+		fmt.Println("expected list of pokemon")
+		return nil
+	}
+
+	fmt.Println("Found Pokemon:")
+	for _, encounter := range location.PokemonEncounters {
+		fmt.Printf(" -%s\n", encounter.Pokemon.Name)
 	}
 	return nil
 }

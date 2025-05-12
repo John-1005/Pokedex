@@ -6,6 +6,7 @@ import (
 		"net/http"
 		"io/ioutil"
 		"errors"
+		"net/url"
 )
 
 
@@ -57,4 +58,34 @@ func (c *Client) GetLocationAreas(url string) (LocationAreaResponse, error) {
 	
 	return locResponse, nil
 
+}
+
+func (c *Client) GetLocationArea(area string) (LocationAreaPokemon, error) {
+	if area == "" {
+		return LocationAreaPokemon{}, errors.New("area name cannot be empty")
+	}
+	areaURL := c.BaseURL + "/location-area/" + url.PathEscape(area)
+	
+	rsp, err := http.Get(areaURL)
+	if err != nil {
+		return LocationAreaPokemon{}, err
+	}
+	
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusOK {
+		return LocationAreaPokemon{}, errors.New("unexpected status code")
+	}
+
+	body, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return LocationAreaPokemon{}, err
+	}
+
+	var locResponse LocationAreaPokemon
+	err = json.Unmarshal(body, &locResponse)
+	if err != nil {
+		return LocationAreaPokemon{}, err
+	}
+	return locResponse, nil
 }

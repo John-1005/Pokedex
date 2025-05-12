@@ -40,7 +40,7 @@ func (c *Cache) Add(key string, val []byte) {
 
 	c.data[key] = cacheEntry{
 		val: 			  val,
-		createdAt:  time.Now()
+		createdAt:  time.Now(),
 	}
 
 }
@@ -66,7 +66,7 @@ func (c *Cache) reapLoop() {
 
 	for {
 
-		<-ticket.C
+		<-ticker.C
 
 		c.mu.Lock()
 
