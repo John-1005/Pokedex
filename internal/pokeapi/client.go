@@ -7,12 +7,15 @@ import (
 		"io/ioutil"
 		"errors"
 		"net/url"
+		"time"
+		"github.com/John-1005/Pokedex/internal/pokecache"
 )
 
 
 
 type Client struct {
 	BaseURL string
+	cache *pokecache.Cache
 }
 
 
@@ -20,6 +23,7 @@ type Client struct {
 func NewClient() Client {
 	return Client{
 		BaseURL: "https://pokeapi.co/api/v2",
+		cache: pokecache.NewCache(5 * time.Minute),
 
 	}
 }
@@ -96,6 +100,14 @@ func (c *Client) PokemonDetails(name string) (PokemonDetails, error) {
 	}
 
 	pokemonURL := c.BaseURL + "/pokemon/" + name 
+	if val, ok := c.cache.Get(pokemonURL); ok {
+		pokemonResp := PokemonDetails{}
+		err := json.Unmarshal(val, &pokemonResp)
+		if err != nil {
+			return PokemonDetails{}, err
+		}
+		return pokemonResp, nil
+	}
 
 	rsp, err := http.Get(pokemonURL)
 	if err != nil {
@@ -118,6 +130,8 @@ func (c *Client) PokemonDetails(name string) (PokemonDetails, error) {
 	if err != nil {
 		return PokemonDetails{}, err
 	}
+
+	c.cache.Add(pokemonURL, body)
 	return pokemonDetails, nil
 }
 
