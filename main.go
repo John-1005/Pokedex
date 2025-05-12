@@ -51,12 +51,22 @@ var commandRegistry map[string]cliCommand
 			"explore": {
 				name: 			 "explore",
 				description: "Shows list of pokemon in the location",
-				callback:    commandExplore,
+				callback:     commandExplore,
 			},
 			"catch": {
 				name: 			 "catch",
 				description: "Catch a pokemon",
-				callback: 	 commandCatch,
+				callback: 	  commandCatch,
+			},
+			"information": {
+				name:        "information",
+				description: "Provides details about caught pokemon",
+				callback:     commandInformation,
+			},
+			"pokedex": {
+				name:        "pokedex",
+				description: "Lists all caught Pokemon",
+				callback:     commandPokedex,
 			},
 	 }
  }
@@ -237,3 +247,38 @@ func commandCatch (config *Config) error {
 	}
 	return nil
 }
+
+func commandInformation (config *Config) error {
+	pokemonName := config.Args[0]
+	pokemonDetails, exists := config.CaughtPokemon[pokemonName]
+	if !exists {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+	fmt.Printf("Name: %s\n", pokemonDetails.Name)
+	fmt.Printf("Height: %d\n", pokemonDetails.Height)
+	fmt.Printf("Weight: %d\n", pokemonDetails.Weight)
+
+
+	fmt.Println("Stats:")
+	for _, stat := range pokemonDetails.Stats {
+		fmt.Printf(" -%s: %d\n", stat.Stat.Name, stat.BaseStat)
+	}
+	
+
+	fmt.Println("Types:")
+	for _, typeInfo := range pokemonDetails.Types {
+		fmt.Printf(" - %s\n", typeInfo.Type.Name)
+	}
+	return nil
+}
+
+
+func commandPokedex (config *Config) error {
+	fmt.Println("Your Pokedex:")
+	for _, pokemon := range config.CaughtPokemon {
+		fmt.Printf(" - %s\n", pokemon.Name)
+	}
+	return nil
+}
+
