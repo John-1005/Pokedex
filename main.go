@@ -6,6 +6,7 @@ import (
         "strings"
 				"bufio"
 				"os"
+				"math/rand"
     		"github.com/John-1005/Pokedex/internal/pokeapi"
 )
 
@@ -19,7 +20,9 @@ type Config struct {
 	NextURL string
 	PreviousURL string
 	Args []string
+	CaughtPokemon map[string]pokeapi.PokemonDetails
 }
+
 
 var commandRegistry map[string]cliCommand 
 
@@ -50,13 +53,20 @@ var commandRegistry map[string]cliCommand
 				description: "Shows list of pokemon in the location",
 				callback:    commandExplore,
 			},
+			"catch": {
+				name: 			 "catch",
+				description: "Catch a pokemon",
+				callback: 	 commandCatch,
+			},
 	 }
  }
 
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	config := &Config{}
+	config := &Config{
+			CaughtPokemon: make(map[string]pokeapi.PokemonDetails),
+	}
 	for {
 		fmt.Println("Pokedex >")
 		scanner.Scan()
@@ -197,6 +207,33 @@ func commandExplore (config *Config) error {
 	fmt.Println("Found Pokemon:")
 	for _, encounter := range location.PokemonEncounters {
 		fmt.Printf(" -%s\n", encounter.Pokemon.Name)
+	}
+	return nil
+}
+
+func commandCatch (config *Config) error {
+	if len(config.Args) == 0 {
+		fmt.Println("Please choose which pokemon you want to catch")
+		return nil
+	}
+
+	client := pokeapi.NewClient()
+	pokemonName := config.Args[0]
+
+	pokemon, err := client.PokemonDetails(pokemonName)
+	if err != nil {
+		return fmt.Errorf("Failed to get information about %s: %v", pokemonName, err)
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
+	pokemonExperience := pokemon.BaseExperience / 2
+	randomNumber := rand.Intn(201)
+
+	if randomNumber >= pokemonExperience {
+		config.CaughtPokemon[pokemonName] = pokemon
+		fmt.Printf("%s was caught!\n", pokemonName)
+	}else{
+		fmt.Printf("%s escaped!\n", pokemonName)
 	}
 	return nil
 }

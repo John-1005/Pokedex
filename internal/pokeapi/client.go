@@ -89,3 +89,35 @@ func (c *Client) GetLocationArea(area string) (LocationAreaPokemon, error) {
 	}
 	return locResponse, nil
 }
+
+func (c *Client) PokemonDetails(name string) (PokemonDetails, error) {
+	if name == "" {
+		return PokemonDetails{}, errors.New("pokemon name cannot be empty")
+	}
+
+	pokemonURL := c.BaseURL + "/pokemon/" + name 
+
+	rsp, err := http.Get(pokemonURL)
+	if err != nil {
+		return PokemonDetails{}, err
+	}
+	
+	defer rsp.Body.Close()
+	
+	if rsp.StatusCode != http.StatusOK {
+		return PokemonDetails{}, errors.New("unexpected status code")
+	}
+
+	body, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return PokemonDetails{}, err
+	}
+
+	var pokemonDetails PokemonDetails
+	err = json.Unmarshal(body, &pokemonDetails)
+	if err != nil {
+		return PokemonDetails{}, err
+	}
+	return pokemonDetails, nil
+}
+
